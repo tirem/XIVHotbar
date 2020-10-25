@@ -3,7 +3,7 @@ This version is further work on SirEdeonX's and Akirane's original addon and mod
 
 ![XIVHotbar](/images/demo/hover.gif)
 
-## Note about 17/09/2020 update
+## Note about 25/10/2020 update by Tirem
 ADDED GAMEPAD SUPPORT: To use please unmap your confirm key in FFXIPadConfig and run the included .ahk file before starting the game. This .ahk was made with DS4 Tool and a PS4 controller in mind and may need modification for your setup. Also be sure to change all my character names to your characters names.
 
 ## Note about 17/09/2020 update
