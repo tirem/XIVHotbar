@@ -1,11 +1,10 @@
 # XIVHotbar - [Version 0.5]
-This version is further work on SirEdeonX's original addon, you can check his work from here: https://github.com/SirEdeonX/FFXIAddons/tree/master/xivhotbar. 
+This version is further work on SirEdeonX's and Akirane's original addon and modification, you can check his work from here: https://github.com/SirEdeonX/FFXIAddons/tree/master/xivhotbar. 
 
 ![XIVHotbar](/images/demo/hover.gif)
 
-## 12/10/2020 update
-
-Implemented a workaround for private server players. Keep in mind if you are playing on a private server you need to use a different font than Sans-Serif, you can find this setting under Texts/Font in settings.xml. Feel free to report if other fonts crashes the game.
+## Note about 17/09/2020 update
+ADDED GAMEPAD SUPPORT: To use please unmap your confirm key in FFXIPadConfig and run the included .ahk file before starting the game. This .ahk was made with DS4 Tool and a PS4 controller in mind and may need modification for your setup. Also be sure to change all my character names to your characters names.
 
 ## Note about 17/09/2020 update
 
