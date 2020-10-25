@@ -154,11 +154,13 @@ function player:execute_action(slot)
 	elseif action.type == 'macro' then
         windower.chat.input('//'.. action.action)
     elseif action.type == 'ws' then
-        windower.chat.input('//'.. action.action .. ' <' .. action.target .. '>')
+        windower.chat.input('/ws "'.. action.action .. '" <' .. action.target .. '>')
     elseif action.type == 'gs' then
         windower.chat.input('//gs ' .. action.action)
     elseif action.type == 's' then
         windower.chat.input('//send ' .. action.action)
+	elseif action.type == 'item' then
+        windower.chat.input('/item "'.. action.action .. '" <' .. action.target .. '>')
     else
         windower.chat.input('/' .. action.type .. ' "' .. action.action .. '" <' .. action.target .. '>')
     end

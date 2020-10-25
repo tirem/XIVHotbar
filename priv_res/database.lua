@@ -32,6 +32,7 @@ local ranges = {[0]=255,[2]=3.40,[3]=4.47,[4]=5.76,[5]=6.89,[6]=7.80,[7]=8.40,[8
 
 database.ma = {}
 database.ja = {}
+database.pet = {}
 database.ws = {}
 
 local wpn_img_ids = {
@@ -75,20 +76,20 @@ end
 function database:map_ws(ws_id) 
 
     image_id = 0
-    if     ws_id >  0   and ws_id <  16  then image_id = wpn_img_ids['H2H']
-    elseif ws_id >  16  and ws_id <  32  then image_id = wpn_img_ids['Dagger'] 
-    elseif ws_id >  32  and ws_id <= 47  then image_id = wpn_img_ids['Sword'] 
-    elseif ws_id >  48  and ws_id <= 61  then image_id = wpn_img_ids['Great Sword']
-    elseif ws_id >  64  and ws_id <= 77  then image_id = wpn_img_ids['Axe']
+    if     ws_id >  0   and ws_id <=  15  then image_id = wpn_img_ids['H2H']
+    elseif ws_id >  15  and ws_id <=  31  then image_id = wpn_img_ids['Dagger'] 
+    elseif ws_id >  31  and ws_id <= 47  then image_id = wpn_img_ids['Sword'] 
+    elseif ws_id >  47  and ws_id <= 61  then image_id = wpn_img_ids['Great Sword']
+    elseif ws_id >  63  and ws_id <= 77  then image_id = wpn_img_ids['Axe']
     elseif ws_id >  79  and ws_id <= 93  then image_id = wpn_img_ids['Great Axe']
     elseif ws_id >  95  and ws_id <= 109 then image_id = wpn_img_ids['Scythe']
-    elseif ws_id >  112 and ws_id <= 125 then image_id = wpn_img_ids['Polearm']
+    elseif ws_id >  111 and ws_id <= 125 then image_id = wpn_img_ids['Polearm']
     elseif ws_id >  127 and ws_id <= 141 then image_id = wpn_img_ids['Katana']
-    elseif ws_id >  144 and ws_id <= 158 then image_id = wpn_img_ids['Great Katana']
-    elseif ws_id >  158 and ws_id <= 176 then image_id = wpn_img_ids['Club']
-    elseif ws_id >  176 and ws_id <= 191 then image_id = wpn_img_ids['Staff']
+    elseif ws_id >  143 and ws_id <= 157 then image_id = wpn_img_ids['Great Katana']
+    elseif ws_id >  159 and ws_id <= 175 then image_id = wpn_img_ids['Club']
+    elseif ws_id >  175 and ws_id <= 191 then image_id = wpn_img_ids['Staff']
     elseif ws_id >  191 and ws_id <= 203 then image_id = wpn_img_ids['Bow']
-    elseif ws_id >  203 and ws_id <= 221 then image_id = wpn_img_ids['Marksmanship']
+    elseif ws_id >  207 and ws_id <= 221 then image_id = wpn_img_ids['Marksmanship']
     elseif ws_id == 224                  then image_id = wpn_img_ids['Dagger']
     elseif ws_id >  224 and ws_id <= 255 then image_id = wpn_img_ids['Sword']
     end
@@ -105,6 +106,7 @@ function database:parse_ws_lua()
 
 	for key, abil in pairs(contents) do
 
+
 		local new_weapon_skill       = {}
 		new_weapon_skill.id          = tostring(contents[key].id)
 		new_weapon_skill.icon        = string.format("%02d", database:map_ws(contents[key].id))
@@ -115,7 +117,6 @@ function database:parse_ws_lua()
 		new_weapon_skill.recast      = new_weapon_skill.cast
 		new_weapon_skill.element     = tostring(contents[key].element)
 		new_weapon_skill.range       = ranges[contents[key].range]
-
 		local function change_sc_string(sc_info)
 			if sc_info == "" then return nil else return sc_info end
 		end
@@ -184,6 +185,7 @@ function database:parse_abilities_lua()
 		new_abil.element = tostring(contents[key].element)
 
         self.ja[(new_abil.name):lower()] = new_abil
+		self.pet[(new_abil.name):lower()] = new_abil
     end
 end
 

@@ -187,6 +187,8 @@ end
 
 
 -- get x position for a given hotbar and slot
+
+
 local function get_slot_x(ui, h, i)
 	local x
 	if (ui.theme.offsets[tostring(h)] ~= nil) then
@@ -203,6 +205,10 @@ local function get_slot_x(ui, h, i)
 		x =  ui.pos_x + ((ui.image_width + ui.slot_spacing) * (i - 1))
 	end
 	return x
+end
+
+function ui:getslotx(ui, h, i)
+	return get_slot_x(ui, h, i)
 end
 
 -- get y position for a given hotbar and slot
@@ -224,10 +230,14 @@ local function get_slot_y(ui, h, i)
     return y 
 end
 
+function ui:getsloty(ui, h, i)
+	return get_slot_y(ui, h, i)
+end
+
 -- calculate recast time
 local function calc_recast_time(time, type)
 
-	use_minutes = {['ja'] = true, ['ma'] = false}
+	use_minutes = {['ja'] = true, ['pet'] = true, ['ma'] = false}
     local recast = time / 60
     local minutes = math.floor(recast)
 
@@ -438,6 +448,7 @@ end
 -- setup positions and dimensions for ui
 function setup_metrics(ui)
     ui.playerinv = windower.ffxi.get_items()
+
     ui.active_environment = {}
     ui.active_environment['field'] = {}
     ui.active_environment['battle'] = {}
@@ -459,7 +470,7 @@ function setup_metrics(ui)
         ui.pos_y = ui.pos_y + 10
     end
 
-    ui.hotbar_spacing = ui.theme.hotbar_spacing 
+    ui.hotbar_spacing = ui.theme.hotbar_spacing	
     setup_environment_numbers(ui)
 end
 
@@ -562,7 +573,7 @@ end
 -- load action into a hotbar slot
 local function load_action(ui, row, slot, action, player_vitals)
 
-	local action_map = { ['ma'] = 'spells', ['ja'] = 'abilities'}
+	local action_map = { ['ma'] = 'spells', ['ja'] = 'abilities', ['pet'] = 'abilities'}
     local is_disabled = false
 
     clear_slot(ui, row, slot)
@@ -578,7 +589,7 @@ local function load_action(ui, row, slot, action, player_vitals)
         end
 	else
 		-- if slot has a skill (ma, ja or ws)
-		if S{'ma','ja'}:contains(action.type) then
+		if S{'ma','ja','pet'}:contains(action.type) then
 			ui.hotbars[row].slot_backgrounds[slot]:alpha(200)
 			local skill = nil
 			local slot_image = nil
@@ -653,13 +664,13 @@ end
 
 function ui:setup(theme_options)
     database:import()
-    self.theme = theme_options
+	self.theme = theme_options
 	self.image_width    = math.floor(self.image_width * self.theme.slot_icon_scale)
 	self.image_height   = math.floor(self.image_height * self.theme.slot_icon_scale)
 	self.hover_icon = images.new(table.copy(images_setup, true))
-    setup_image(self.hover_icon, windower.addon_path..'/images/other/square.png')
+    setup_image(self.hover_icon, windower.addon_path..'/images/other/selector.png')
 	self.hover_icon:hide()
-	self.hover_icon:size(self.image_width+2, self.image_height+2)
+	self.hover_icon:size(self.image_width+6, self.image_height+6)
 	self.hover_icon.row = 0
 	self.hover_icon.column = 0
     setup_metrics(self)
@@ -816,14 +827,15 @@ function ui:inner_check_recasts(player_hotbar, environment, player_vitals, row, 
 		else
 			clear_recast(self, row, slot)
 		end
-	elseif (S{'ma','ja','ws'}:contains(action.type)) then
+	elseif (S{'ma','ja','ws','pet'}:contains(action.type)) then
 		local skill = nil
 		local action_recasts = nil
 		local in_cooldown = false
 		local is_in_seconds = false
 
 		-- if its magic, look for it in spells
-		if (action.type == 'ja' or action.type == 'ma') and database[action.type][(action.action):lower()] ~= nil then
+		if (action.type == 'ja' or action.type == 'ma' or action.type == 'pet') and database[action.type][(action.action):lower()] ~= nil then
+
 			skill = database[action.type][(action.action):lower()]
 			action_recasts = self.recasts[action.type]
 		end
@@ -837,7 +849,6 @@ function ui:inner_check_recasts(player_hotbar, environment, player_vitals, row, 
 				-- setup recast elements
 				self.hotbars[row].slot_recasts[slot]:path(windower.addon_path..'/images/other/black-square.png')
 			end
-
 			in_cooldown = true
 		end
 
@@ -884,6 +895,7 @@ end
 function ui:check_recasts(player_hotbar, environment, player_vitals )
     ui.recasts['ja'] = windower.ffxi.get_ability_recasts()
     ui.recasts['ma'] = windower.ffxi.get_spell_recasts()
+	ui.recasts['pet'] = windower.ffxi.get_ability_recasts()
     for h=1, self.theme.rows, 1 do
         for i=1, self.theme.columns, 1 do
 			self:inner_check_recasts(player_hotbar, environment, player_vitals, h, i)
@@ -1000,19 +1012,22 @@ end
 function ui:light_up_action(x, y, row, column, player_hotbar, environment, vitals)
 	local icon_x = get_slot_x(self, row, column)
 	local icon_y = get_slot_y(self, row, column)
-	self.hover_icon:pos(icon_x-1, icon_y-1)
+	self.hover_icon:pos(icon_x-3, icon_y-3)
 	self.hover_icon:alpha(255)
 	self.hover_icon:show()
-	local action = player_hotbar[environment]['hotbar_' .. row]['slot_' .. column]
+	local action 
+	if (player_hotbar) then
+		action = player_hotbar[environment]['hotbar_' .. row]['slot_' .. column]
+	end
 	if (self.theme.show_description == true and action ~= nil) then
-		if (S{'ma', 'ja', 'ws'}:contains(action.type)) then
+		if (S{'ma', 'ja', 'ws', 'pet'}:contains(action.type)) then
 			if (self.current_row ~= row or self.current_column ~= column) then
 				local text_msg = ""
 				local line_space = 6
 				if (action.type == "ma") then
 					text_msg = formatter.format_spell_info(database, action.action, action.target)
 					self.action_info:text(text_msg)
-				elseif (action.type == "ja") then
+				elseif (action.type == "ja" or action.type == "pet") then
 					text_msg = formatter.format_ability_info(database, action.action, action.target)
 					self.action_info:text(text_msg)
 				elseif (action.type == "ws") then
@@ -1063,8 +1078,8 @@ function ui:move_icons(moved_row_info)
 		self.hotbars[r].number:pos(get_slot_x(self, r, 0)+30, get_slot_y(self, r, 0))
 	end
 	if (r == self.theme.environment.hook_onto_bar) then
-		local env_pos_x = ui:get_slot_x(self, self.theme.environment.hook_onto_bar, self.theme.columns+1) - 10
-		local env_pos_y = ui:get_slot_y(self, self.theme.environment.hook_onto_bar, 0)
+		local env_pos_x = get_slot_x(self, self.theme.environment.hook_onto_bar, self.theme.columns+1) - 10
+		local env_pos_y = get_slot_y(self, self.theme.environment.hook_onto_bar, 0)
 
 		self.active_environment['field']:pos(env_pos_x, env_pos_y)
 		self.active_environment['battle']:pos(env_pos_x, env_pos_y + 50)

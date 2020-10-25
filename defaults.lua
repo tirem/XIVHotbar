@@ -32,25 +32,25 @@ defaults.Hotbar = {}
 defaults.Hotbar.HideEmptySlots = false
 defaults.Hotbar.HideActionName = false
 defaults.Hotbar.HideActionCost = false
-defaults.Hotbar.HideActionElement = true
+defaults.Hotbar.HideActionElement = false
 defaults.Hotbar.HideRecastAnimation = false
 defaults.Hotbar.HideRecastText = false
 defaults.Hotbar.HideBattleNotice = false
 defaults.Hotbar.HideInventoryCount = false
-defaults.Hotbar.EnableWeaponSwitching = false
+defaults.Hotbar.EnableWeaponSwitching = true
 defaults.Hotbar.ShowDescription = true
 defaults.Hotbar.SlotIconScale = 1.0
 defaults.Hotbar.rows = 3
-defaults.Hotbar.columns = 3
+defaults.Hotbar.columns = 10
 defaults.Hotbar.Offsets = {}
-defaults.Hotbar.Offsets.First  = { Vertical = false, OffsetX = 0, OffsetY = 0 }
-defaults.Hotbar.Offsets.Second = { Vertical = false, OffsetX = 0, OffsetY = 0 }
-defaults.Hotbar.Offsets.Third  = { Vertical = false, OffsetX = 0, OffsetY = 0 }
+defaults.Hotbar.Offsets.First  = { Vertical = false, OffsetX = 700, OffsetY = 1010 }
+defaults.Hotbar.Offsets.Second = { Vertical = false, OffsetX = 700, OffsetY = 960 }
+defaults.Hotbar.Offsets.Third  = { Vertical = false, OffsetX = 700, OffsetY = 910 }
 defaults.Hotbar.Offsets.Fourth = { Vertical = false, OffsetX = 0, OffsetY = 0 }
 defaults.Hotbar.Offsets.Fifth  = { Vertical = false, OffsetX = 0, OffsetY = 0 }
 defaults.Hotbar.Offsets.Sixth  = { Vertical = false, OffsetX = 0, OffsetY = 0 }
 defaults.Hotbar.Environment = {}
-defaults.Hotbar.Environment.HookOntoBar = 1
+defaults.Hotbar.Environment.HookOntoBar = 3
  
 defaults.Controls = {}
 defaults.Controls.ToggleBattleMode = 43
@@ -77,14 +77,14 @@ defaults.Color.TpCost.Red = 254
 defaults.Color.TpCost.Green = 222
 defaults.Color.TpCost.Blue = 0
 defaults.Color.Feedback = {}
-defaults.Color.Feedback.Opacity = 150
+defaults.Color.Feedback.Opacity = 200
 defaults.Color.Feedback.Speed = 30
 defaults.Color.Disabled = {}
 defaults.Color.Disabled.Opacity = 100
 
 defaults.Texts = {}
-defaults.Texts.Font = 'sans-serif'
-defaults.Texts.Size = 7
+defaults.Texts.Font = 'arial'
+defaults.Texts.Size = 9
 defaults.Texts.OffsetX = -100
 defaults.Texts.OffsetY = 0
 defaults.Texts.Color = {}
@@ -94,9 +94,9 @@ defaults.Texts.Color.Green = 255
 defaults.Texts.Color.Blue = 255
 defaults.Texts.Stroke = {}
 defaults.Texts.Stroke.Width = 2
-defaults.Texts.Stroke.Alpha = 200
-defaults.Texts.Stroke.Red = 20
-defaults.Texts.Stroke.Green = 20
-defaults.Texts.Stroke.Blue = 20
+defaults.Texts.Stroke.Alpha = 180
+defaults.Texts.Stroke.Red = 0
+defaults.Texts.Stroke.Green = 0
+defaults.Texts.Stroke.Blue = 0
 
 return defaults

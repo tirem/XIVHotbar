@@ -89,8 +89,9 @@ function initialize()
 	box:init(theme_options)
     local windower_player = windower.ffxi.get_player()
 	local server = resources.servers[windower.ffxi.get_info().server] 
-		and resources.servers[windower.ffxi.get_info().server].en 
-		or "PrivateServer_"..tostring(windower.ffxi.get_info().server)
+	and resources.servers[windower.ffxi.get_info().server].en 
+	or "PrivateServer_"..tostring(windower.ffxi.get_info().server)
+
 	local inventory = windower.ffxi.get_items()
 	local equipment = inventory['equipment']
 	if (theme_options.enable_weapon_switching == true) then
@@ -102,7 +103,7 @@ function initialize()
 	current_tp = windower_player.vitals.tp
 	ui:update_mp(current_mp)
 	ui:update_tp(current_tp)
-    player:initialize(windower_player, server, theme_options)
+	player:initialize(windower_player, server, theme_options)
     player:load_hotbar()
     keyboard:bind_keys(theme_options.rows, theme_options.columns)
     ui:load_player_hotbar(player:get_hotbar_info())
@@ -200,93 +201,16 @@ local function print_help()
 	log("shortcuts: Used for weapon skills.")
 end
 
--- ON COMMAND --
-windower.register_event('addon command', function(command, ...)
-    command = command and command:lower() or 'help'
-    local args = {...}
-
-     if command == 'reload' then 
-         reload_hotbar() 
-	 elseif command == 'set' then
-        set_action_command(args)
-	elseif command == 'help' then
-		print_help()
-    elseif command == 'mount' then
-        local player_mount = windower.ffxi.get_player()
-        for k=1,32 do 
-            if player_mount.buffs[k] == 252 then
-                windower.chat.input('/dismount')
-                return
-            end
-        end
-        if args[1] == nil then 
-            windower.chat.input('/mount crab <me>')
-        else
-            windower.chat.input('/mount '..args[1]..' <me>')
-        end
-	elseif command == 'summon' then
-		local avatar_id = player:determine_summoner_id(args[1])
-		if (avatar_id == 0) then
-			print("Error, couldn't find avatar '"..args[1].."'... Unable to load actions for it.")
-		else
-			player:load_job_ability_actions(avatar_id)
-            ui:load_player_hotbar(player:get_hotbar_info())
-		end
-        windower.chat.input('/ma '..args[1]..' <me>')
-    elseif command == 'execute' then
-        change_active_hotbar(tonumber(args[1]))
-        if tonumber(args[2]) <= theme_options.columns then 
-			trigger_action(tonumber(args[2]))
-        end
-    elseif command == 'reload' then
-        flush_old_keybinds()
-        bind_keys()
-        player:load_hotbar()
-	elseif command == 'add' then
-		player:insert_action(args)
-	elseif command == 'move' then
-		state.demo = not state.demo
-		if state.demo then
-			log("Layout mode enabled!") 
-			log("Click, then drag an action onto another slot to change its location.")
-			log("Click between the rows, then drag to move the hotbars.")
-			log("To save the changes, type '//htb move' then hit enter.")
-            print('XIVHOTBAR: Layout mode enabled')
-			box:enable()
-		else
-			save_hotbar(settings.Hotbar.Offsets.First, 1)
-			save_hotbar(settings.Hotbar.Offsets.Second, 2)
-			save_hotbar(settings.Hotbar.Offsets.Third, 3)
-			save_hotbar(settings.Hotbar.Offsets.Fourth, 4)
-			save_hotbar(settings.Hotbar.Offsets.Fifth, 5)
-			save_hotbar(settings.Hotbar.Offsets.Sixth, 6)
-
-			config.save(settings)
-            print('XIVHOTBAR: Layout mode disabled, writing new positions to settings.xml.')
-			box:disable()
-		end
-    end
-end)
-
-
--- ON KEY --
-windower.register_event('keyboard', function(dik, flags, blocked)
-    if ui.hotbar.ready == false or windower.ffxi.get_info().chat_open then
-        return
-    end
-
-    if ui.hotbar.hide_hotbars then
-        return
-    end
-
-    if dik == theme_options.controls_battle_mode and flags == true then
-        toggle_environment()
-    end
-end)
-
+function math.Clamp(val, lower, upper)
+    assert(val and lower and upper, "not very useful error message here")
+    if lower > upper then lower, upper = upper, lower end -- swap if boundaries supplied the wrong way
+    return math.max(lower, math.min(upper, val))
+end
 
 local current_hotbar = -1
 local current_action = -1
+local mouselast = 1
+local mousehovered = 0
 
 local function mouse_hotbars(type, x, y, delta, blocked)
 
@@ -322,9 +246,11 @@ local function mouse_hotbars(type, x, y, delta, blocked)
 		elseif type == 0 then -- Mouse move
 			local hotbar, action = ui:hovered(x, y)
 			if(action ~= nil and hotbar ~= nil) then
+			mousehovered = 1
 				ui:light_up_action(x, y, hotbar, action, player:get_hotbar_info())
 				return_value = true
-			else
+			elseif (mousehovered == 1) then
+				mouselast = 1
 				ui:hide_hover()
 				return_value = false
 			end
@@ -333,6 +259,83 @@ local function mouse_hotbars(type, x, y, delta, blocked)
 
 	return return_value
 end
+
+local dpadX = 1
+local dpadY = 1
+local hasSubTarget = 0
+
+local function keyboard_hotbars(x, y)
+
+	if (hasSubTarget == 1) then
+		return
+	end
+	
+	if (mouselast == 0) then
+		dpadX = dpadX + x
+		if (dpadX > theme_options.rows) then
+			toggle_environment()
+			dpadX = 1
+		elseif (dpadX < 1) then
+			toggle_environment()
+			dpadX = theme_options.rows
+		end
+		dpadY = dpadY + y
+		if (dpadY > theme_options.columns) then
+			dpadY = 1
+		elseif (dpadY < 1) then
+			dpadY = theme_options.columns
+		end
+	end
+	
+	mousehovered = 0
+	mouselast = 0
+	local sx = ui:getslotx(ui, dpadX, dpadY)
+	local sy = ui:getsloty(ui, dpadX, dpadY)
+	local hotbar, action = ui:hovered(0, 0)
+	ui:light_up_action(0, 0, dpadX, dpadY, hotbar, action, player:get_hotbar_info())
+end
+
+local function keyboard_click()
+	
+	if (hasSubTarget == 1) then
+		windower.chat.input('//setkey enter down; wait 0.1; setkey enter up;')
+		return
+	end
+	
+	if (mouselast == 0) then
+		local sx = ui:getslotx(ui, dpadX, dpadY)
+		local sy = ui:getsloty(ui, dpadX, dpadY)
+		mouse_hotbars(1, sx, sy, 0, 0)
+		mouse_hotbars(2, sx, sy, 0, 0)
+	else
+		mouselast = 0
+		keyboard_hotbars(0,0)
+	end
+end
+
+-- ON KEY --
+windower.register_event('keyboard', function(dik, flags, blocked)
+
+    if ui.hotbar.ready == false or windower.ffxi.get_info().chat_open or ui.hotbar.hide_hotbars then
+        return
+    end
+
+--    if dik == theme_options.controls_battle_mode and flags == true then
+--		toggle_environment()
+	if dik == 59 and flags == true then
+		keyboard_hotbars(1,0)
+	elseif dik == 60 and flags == true then
+		keyboard_hotbars(0,1)
+	elseif dik == 61 and flags == true then
+		keyboard_hotbars(-1,0)
+	elseif dik == 62 and flags == true then
+		keyboard_hotbars(0,-1)
+	elseif dik == 43 and flags == true then
+		keyboard_click()
+		return true
+    end
+
+end)
 
 -- Mouse Events
 windower.register_event('mouse', function(type, x, y, delta, blocked)
@@ -349,6 +352,7 @@ windower.register_event('mouse', function(type, x, y, delta, blocked)
     return return_value
 end)
 
+local readytoclearst = 0
 
 -- ON PRERENDER --
 windower.register_event('prerender',function()
@@ -360,6 +364,16 @@ windower.register_event('prerender',function()
         ui:show_feedback()
     end
 
+	if (windower.ffxi.get_mob_by_target('st')) then
+		hasSubTarget = 1
+		readytoclearst = 0
+	elseif (readytoclearst == 3) then
+		hasSubTarget = 0
+		readytoclearst = 0
+	elseif (hasSubTarget) then
+		readytoclearst = readytoclearst + 1
+	end
+		
     if ui.is_setup and ui.hotbar.hide_hotbars == false then
 		moved_row_info = box:get_move_box_info()
 		if (moved_row_info.swapped_slots.active == true) then
@@ -482,6 +496,73 @@ windower.register_event('add item', 'remove item', function(id, bag, index, coun
 	end
 end)
 
+-- ON COMMAND --
+windower.register_event('addon command', function(command, ...)
+    command = command and command:lower() or 'help'
+    local args = {...}
+
+	if command == 'reload' then 
+         reload_hotbar() 
+	elseif command == 'set' then
+        set_action_command(args)
+	elseif command == 'help' then
+		print_help()
+    elseif command == 'mount' then
+        local player_mount = windower.ffxi.get_player()
+        for k=1,32 do 
+            if player_mount.buffs[k] == 252 then
+                windower.chat.input('/dismount')
+                return
+            end
+        end
+        if args[1] == nil then 
+            windower.chat.input('/mount crab <me>')
+        else
+            windower.chat.input('/mount '..args[1]..' <me>')
+        end
+	elseif command == 'summon' then
+		local avatar_id = player:determine_summoner_id(args[1])
+		if (avatar_id == 0) then
+			print("Error, couldn't find avatar '"..args[1].."'... Unable to load actions for it.")
+		else
+			player:load_job_ability_actions(avatar_id)
+            ui:load_player_hotbar(player:get_hotbar_info())
+		end
+        windower.chat.input('/ma '..args[1]..' <me>')
+    elseif command == 'execute' then
+        change_active_hotbar(tonumber(args[1]))
+        if tonumber(args[2]) <= theme_options.columns then 
+			trigger_action(tonumber(args[2]))
+        end
+    elseif command == 'reload' then
+        flush_old_keybinds()
+        bind_keys()
+        player:load_hotbar()
+	elseif command == 'add' then
+		player:insert_action(args)
+	elseif command == 'move' then
+		state.demo = not state.demo
+		if state.demo then
+			log("Layout mode enabled!") 
+			log("Click, then drag an action onto another slot to change its location.")
+			log("Click between the rows, then drag to move the hotbars.")
+			log("To save the changes, type '//htb move' then hit enter.")
+            print('XIVHOTBAR: Layout mode enabled')
+			box:enable()
+		else
+			save_hotbar(settings.Hotbar.Offsets.First, 1)
+			save_hotbar(settings.Hotbar.Offsets.Second, 2)
+			save_hotbar(settings.Hotbar.Offsets.Third, 3)
+			save_hotbar(settings.Hotbar.Offsets.Fourth, 4)
+			save_hotbar(settings.Hotbar.Offsets.Fifth, 5)
+			save_hotbar(settings.Hotbar.Offsets.Sixth, 6)
+
+			config.save(settings)
+            print('XIVHOTBAR: Layout mode disabled, writing new positions to settings.xml.')
+			box:disable()
+		end
+    end
+end)
 
 -- ON JOB CHANGE --
 windower.register_event('job change',function(main_job, main_job_level, sub_job, sub_job_level)

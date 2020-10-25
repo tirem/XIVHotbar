@@ -69,8 +69,8 @@ end
 
 function text_formatter.format_ability_info(database, action, action_target)
 	local string_return = ""
-	
 	if database.ja[(action):lower()] ~= nil then
+
 		local ability = database.ja[(action):lower()]
 		local ability_info = {}
 		ability_info[1] = string.format("\\cs(255,255,0)[%s]\\cr    Target:\\cs(200,200,255)<%s>\\cr\n", ability.name, action_target) 
